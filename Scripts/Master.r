@@ -1,6 +1,6 @@
 library(dplyr); library(magrittr); library(readr); library(here)
 library(fasterize); library(sf); library(raster); library(rgeos)
-library(ggplot2); library(shiny); 
+library(ggplot2); library(shiny); library(tmap); library(tmaptools); library(wesanderson); library(leaflet)
 
 # import basin shapefiles and simplify to 0.5d resolution
 
@@ -12,24 +12,26 @@ crs(Dummyras) <- CRS('+init=EPSG:4326')
 Basins_raw <- sf::st_read(dsn = here::here("Data", "GRDC"), layer = "MBotW")
 Basins_raw_0d5RAS <- fasterize(sf = Basins_raw, raster = Dummyras, field = "BASWC4_ID", fun = "last")
 Basins_raw_0d5 <- rasterToPolygons(Basins_raw_0d5RAS, n=4, na.rm=TRUE, digits=12, dissolve=TRUE)
-names(Basins_raw_0d5) <- "layer"
+names(Basins_raw_0d5) <- "BASWC4_ID"
 
-Basins_raw_0d5 <- merge(x = Basins_raw_0d5, y = as.data.frame(Basins_raw), 
-                        by.x = "layer", by.y = "BASWC4_ID", all = T)
+Basins_raw_0d5$NAME <- Basins_raw$NAME[match(Basins_raw_0d5$BASWC4_ID, Basins_raw$BASWC4_ID)]
 
-library(tmap); library(tmaptools); library(wesanderson)
-data(World)
+Basins_raw_0d5$URL <- paste("Download stripes for the ", Basins_raw_0d5$NAME, 
+                            " basin ", "<a href=\"https://raw.githubusercontent.com/XanderHuggins/WaterStripes/master/Figures/", 
+                            Basins_raw_0d5$NAME, "_id_", Basins_raw_0d5$BASWC4_ID, ".png\", target=\"_blank\">HERE</a>", sep = "")
 
-palt <- wes_palette("Darjeeling1", 100, type = "continuous") 
+# plot leaflet map
+pal <- wes_palette("Zissou1", length(Basins_raw_0d5$NAME), type = "continuous")   
 
+Basins_raw_0d5 %>% 
+  leaflet() %>%
+  addTiles(group = "OSM") %>%
+  addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+              opacity = 1.0, fillOpacity = 0.5,
+              fillColor = pal,
+              highlightOptions = highlightOptions(color = "red", weight = 3,bringToFront = TRUE),
+              popup = ~URL) %>%
+  setView(lat = 25, lng = 0, zoom = 2.25)
 
-tm_shape(Basins_raw_0d5) + tm_polygons("NAME", palette = "Set3", alpha=0.6, id = "NAME", legend.show = FALSE) +
-  # tm_shape(World) +  tm_borders(lwd = 0.7) +
-  tm_layout(legend.show = F) +
-  tm_basemap(server = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")+
-  tm_style("white", legend.show = F, earth.boundary = c(-180, -60, 180, 88), earth.boundary.color = "white",
-           space.color = "white", legend.frame = F, frame = F) +
-  tm_view(set.view = 1.5) 
-  
 
   
