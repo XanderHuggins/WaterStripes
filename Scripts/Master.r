@@ -1,6 +1,7 @@
 library(dplyr); library(magrittr); library(readr); library(here)
 library(fasterize); library(sf); library(raster); library(rgeos)
-library(ggplot2); library(shiny); library(tmap); library(tmaptools); library(wesanderson); library(leaflet)
+library(ggplot2); library(shiny); library(tmap); library(tmaptools); 
+library(wesanderson); library(leaflet); library(leafpop)
 
 # import basin shapefiles and simplify to 0.5d resolution
 
@@ -14,15 +15,30 @@ Basins_raw_0d5RAS <- fasterize(sf = Basins_raw, raster = Dummyras, field = "BASW
 Basins_raw_0d5 <- rasterToPolygons(Basins_raw_0d5RAS, n=4, na.rm=TRUE, digits=12, dissolve=TRUE)
 names(Basins_raw_0d5) <- "BASWC4_ID"
 
+# Extract name 
 Basins_raw_0d5$NAME <- Basins_raw$NAME[match(Basins_raw_0d5$BASWC4_ID, Basins_raw$BASWC4_ID)]
 
-Basins_raw_0d5$URL <- paste("Download stripes for the ", Basins_raw_0d5$NAME, 
-                            " basin ", "<a href=\"https://raw.githubusercontent.com/XanderHuggins/WaterStripes/master/Figures/", 
-                            Basins_raw_0d5$NAME, "_id_", Basins_raw_0d5$BASWC4_ID, ".png\", target=\"_blank\">HERE</a>", sep = "")
+# Get URL for simple figure (no annotation)
+Basins_raw_0d5$prev <- paste('https://raw.githubusercontent.com/XanderHuggins/WaterStripes/master/Figures/NoText/',
+                            Basins_raw_0d5$NAME, '_id_', Basins_raw_0d5$BASWC4_ID, "_nolab",'.png', sep = "")
+Basins_raw_0d5$prev <- str_replace_all(Basins_raw_0d5$prev, " ", "%20")
 
 # plot leaflet map
 pal <- wes_palette("Zissou1", length(Basins_raw_0d5$NAME), type = "continuous")   
 
+library(htmltools); library(stringr)
+
+labs <- lapply(seq(nrow(as.data.frame(Basins_raw_0d5))), function(i) {
+  paste0( '<p>', "<big>", "<b>",as.data.frame(Basins_raw_0d5)[i, "NAME"],  " Basin", "</b>", "</big>", '<p></p>', 
+          "<img src = ", as.data.frame(Basins_raw_0d5)[i, "prev"], " style='width:250px;height:125px;' ", ">", '</p>' ) 
+})
+
+# Get URL for hyperlink image (to full annotation image)
+Basins_raw_0d5$URL <- paste("Download stripes for the ", Basins_raw_0d5$NAME, 
+                            " basin ", "<a href=\"https://raw.githubusercontent.com/XanderHuggins/WaterStripes/master/Figures/", 
+                            Basins_raw_0d5$NAME, "_id_", Basins_raw_0d5$BASWC4_ID, ".png\", target=\"_blank\">HERE</a>", sep = "")
+
+# create interactive leaflet map 
 Basins_raw_0d5 %>% 
   leaflet() %>%
   addTiles(group = "OSM") %>%
@@ -30,8 +46,18 @@ Basins_raw_0d5 %>%
               opacity = 1.0, fillOpacity = 0.5,
               fillColor = pal,
               highlightOptions = highlightOptions(color = "red", weight = 3,bringToFront = TRUE),
+              label = lapply(labs, htmltools::HTML), #paste(Basins_raw_0d5$NAME, " Basin", sep = ""),
+              labelOptions = labelOptions(style = list("font-weight" = "normal", padding = "3px 8px"),
+                                          textsize = "12px", Height = 150),
+              group = "polygons",
               popup = ~URL) %>%
   setView(lat = 25, lng = 0, zoom = 2.25)
 
+#paste0("<img src = ", Basins_raw_0d5$URL, ">"), #~URL,) %>%
+# addPopupImages(image = paste0("<img src = ", Basins_raw_0d5$URL, ">"),
+# group = "polygons",
+# width = 250, height = NULL) %>%
 
+
+  
   
