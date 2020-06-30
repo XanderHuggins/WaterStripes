@@ -60,12 +60,12 @@ for (i in 1:length(Basin_id)){
           panel.grid.major = element_blank(),
           legend.title = element_blank(),
           legend.position = "none",
-          axis.text.x = element_text(vjust = 3, color = "white"),
+          axis.text.x = element_text(size = 10, vjust = 3, color = "white"),
           panel.grid.minor = element_blank(),
-          plot.title = element_text(size = 15, face = "plain", hjust = 0.5, color = "white"),
+          plot.title = element_text(size = 16, face = "plain", hjust = 0.5, color = "white"),
           axis.ticks.x = element_line(color = c("white", "grey12")),
           plot.caption = element_text(color = "white"),
-          plot.background = element_rect(fill = "grey12"))
+          plot.background = element_rect(fill = "grey10"))
   
   xcol <- brewer.pal(11, "RdBu")
   
@@ -81,7 +81,8 @@ for (i in 1:length(Basin_id)){
     scale_fill_gradientn(colors = xcol, limits=c(-2.6*sd_04t09, 2.6*sd_04t09), 
                          oob=squish, na.value="grey77")+
     guides(fill = guide_colorbar(barwidth = 1))+
-    labs(title = paste(name, " Basin", sep = ""),
+    labs(title = paste("Water availability anomalies for the ",name, 
+                       " Basin since 2002", sep = ""),
          caption = "Data: JPL global mascons (RL06 v02)")+
     theme_strip
   
@@ -89,7 +90,9 @@ for (i in 1:length(Basin_id)){
          plot = last_plot(),
          device = "png",
          dpi = 300,
-         width = 10, units = "in")
+         width = 10, 
+         height = 5.63,
+         units = "in")
   
   print(i)
 }

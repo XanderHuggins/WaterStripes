@@ -1,7 +1,7 @@
 library(dplyr); library(magrittr); library(readr); library(here)
 library(fasterize); library(sf); library(raster); library(rgeos)
 library(ggplot2); library(shiny); library(tmap); library(tmaptools); 
-library(wesanderson); library(leaflet); library(leafpop)
+library(wesanderson); library(leaflet); library(leafpop); library(htmltools); library(stringr)
 
 # import basin shapefiles and simplify to 0.5d resolution
 
@@ -26,7 +26,7 @@ Basins_raw_0d5$prev <- str_replace_all(Basins_raw_0d5$prev, " ", "%20")
 # plot leaflet map
 pal <- wes_palette("Zissou1", length(Basins_raw_0d5$NAME), type = "continuous")   
 
-library(htmltools); library(stringr)
+
 
 labs <- lapply(seq(nrow(as.data.frame(Basins_raw_0d5))), function(i) {
   paste0( '<p>', "<big>", "<b>",as.data.frame(Basins_raw_0d5)[i, "NAME"],  " Basin", "</b>", "</big>", '<p></p>', 
@@ -46,9 +46,19 @@ Basins_raw_0d5 %>%
               opacity = 1.0, fillOpacity = 0.5,
               fillColor = pal,
               highlightOptions = highlightOptions(color = "red", weight = 3,bringToFront = TRUE),
-              label = lapply(labs, htmltools::HTML), #paste(Basins_raw_0d5$NAME, " Basin", sep = ""),
-              labelOptions = labelOptions(style = list("font-weight" = "normal", padding = "3px 8px"),
-                                          textsize = "12px", Height = 150),
+              label = lapply(labs, htmltools::HTML), 
+              labelOptions = labelOptions(permanent = FALSE,
+                                          direction = "auto",
+                                          closeButton = TRUE,
+                                          style = list("background-color" = "rgba(32,32,32,1)",
+                                                       "border" = "none",
+                                                       "color" = "white",
+                                                       "line-height" = "0px",
+                                                       "text-align" = "center",
+                                                       "box-shadow" = "none",
+                                                       "margin" = "1px !important",
+                                                       "height" = "155px"),
+                                          textsize = "14px"),
               group = "polygons",
               popup = ~URL) %>%
   setView(lat = 25, lng = 0, zoom = 2.25)
