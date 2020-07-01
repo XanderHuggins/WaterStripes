@@ -35,8 +35,19 @@ labs <- lapply(seq(nrow(as.data.frame(Basins_raw_0d5))), function(i) {
 
 # Get URL for hyperlink image (to full annotation image)
 Basins_raw_0d5$URL <- paste("Download stripes for the ", Basins_raw_0d5$NAME, 
-                            " basin ", "<a href=\"https://raw.githubusercontent.com/XanderHuggins/WaterStripes/master/Figures/", 
-                            Basins_raw_0d5$NAME, "_id_", Basins_raw_0d5$BASWC4_ID, ".png\", target=\"_blank\">HERE</a>", sep = "")
+                            " basin:", "<br>",
+                            
+                            "Color options: ", 
+                            
+                            "<a href=\"https://raw.githubusercontent.com/XanderHuggins/WaterStripes/master/Figures/", 
+                            Basins_raw_0d5$NAME, "_id_", Basins_raw_0d5$BASWC4_ID, ".png\", target=\"_blank\">Red-blue</a>",
+                            
+                            " | ",
+                            
+                            "<a href=\"https://raw.githubusercontent.com/XanderHuggins/WaterStripes/master/Figures/AltCol_1/", 
+                            Basins_raw_0d5$NAME, "_id_", Basins_raw_0d5$BASWC4_ID, ".png\", target=\"_blank\">Brown-blue</a>",
+                            
+                            sep = "")
 
 # create interactive leaflet map 
 Basins_raw_0d5 %>% 
@@ -62,12 +73,3 @@ Basins_raw_0d5 %>%
               group = "polygons",
               popup = ~URL) %>%
   setView(lat = 25, lng = 0, zoom = 2.25)
-
-#paste0("<img src = ", Basins_raw_0d5$URL, ">"), #~URL,) %>%
-# addPopupImages(image = paste0("<img src = ", Basins_raw_0d5$URL, ">"),
-# group = "polygons",
-# width = 250, height = NULL) %>%
-
-
-  
-  
